@@ -54,7 +54,7 @@
 训练及测试数据集选用[Click-Through Rate Prediction](https://www.kaggle.com/c/avazu-ctr-prediction)所用的Avazu数据集。该数据集包括10天时间段的点击数据，包含两部分：训练集和测试集。训练集包含前9天内Avazu的点击流量，测试集则对应训练数据后一天的点击流量。
 每一行数据格式如下所示：
 ```
-<label> <categorical feature 1> ... <categorical feature 22>
+<categorical feature 1> ... <categorical feature 22> <label> 
 ```
 其中```<label>```表示广告是否被点击，点击用1表示，未点击用0表示。```<categorical feature>```代表分类特征（离散特征），共有22个离散特征。相邻两个特征用```，```分隔，缺失特征用'-1'表示。测试集中```<label>```特征已被移除。  
 在模型目录的data目录下为您准备了快速运行的示例数据，若需要使用全量数据可以参考下方[效果复现](#效果复现)部分。
