@@ -41,10 +41,13 @@ class FLENLayer(nn.Layer):
                     out_features=self.sparse_feature_dim,
                     weight_attr=paddle.ParamAttr(
                     initializer=paddle.nn.initializer.XavierUniform()))
-                    # initializer=paddle.nn.initializer.TruncatedNormal(
-                    #     std=1.0 / math.sqrt(self.sparse_feature_dim))))
+                    
         self.add_sublayer('fwbi_fc_32', self.fwbi_fc_32)
-        self.fwbi_bn = paddle.nn.BatchNorm(self.sparse_feature_dim)
+
+        self.fwbi_relu = paddle.nn.ReLU()
+        self.add_sublayer('fwbi_relu', self.fwbi_relu)
+        
+        self.fwbi_bn = paddle.nn.BatchNorm1D(self.sparse_feature_dim)
         self.add_sublayer('fwbi_bn', self.fwbi_bn)
 
         self.fwbi_drop = paddle.nn.Dropout(p=0.2)
@@ -54,8 +57,7 @@ class FLENLayer(nn.Layer):
                 out_features = 1,
                 weight_attr=paddle.ParamAttr(
                     initializer=paddle.nn.initializer.XavierUniform()))
-                    # initializer=paddle.nn.initializer.TruncatedNormal(
-                    #     std=1.0 / math.sqrt(32))))
+                   
         self.add_sublayer('linear_out', self.linear)
 
     def forward(self, sparse_inputs):
@@ -77,11 +79,11 @@ class FLENLayer(nn.Layer):
         # field-weighted embedding
         fm_mf_out = self._FieldWiseBiInteraction(field_wise_embed_list)
         fwbi_fc_32 = self.fwbi_fc_32(fm_mf_out)
+        fwbi_fc_32 = self.fwbi_relu(fwbi_fc_32)
         fwbi_bn = self.fwbi_bn(fwbi_fc_32)
         fwbi_drop = self.fwbi_drop(fwbi_bn)
 
         logits = paddle.concat([fwbi_drop, dnn_output], axis=1) # [bacth, 2*sparse_feature_dim]
-        # print('logits shape:',logits.shape)
   
         y = self.linear(logits)
         predict = F.sigmoid(y)
@@ -103,11 +105,7 @@ class EmbeddingLayer(nn.Layer):
             sparse=True,
             weight_attr=paddle.ParamAttr(
                 initializer=paddle.nn.initializer.XavierUniform()))
-                # initializer=paddle.nn.initializer.TruncatedNormal(
-                #     mean=0.0,
-                #     std=self.init_value_ /
-                #     math.sqrt(float(self.sparse_feature_dim))))) 
-
+            
     def forward(self, sparse_inputs):
         emb_list = []
         for data in sparse_inputs:
@@ -136,8 +134,7 @@ class DNNLayer(nn.Layer):
                 out_features=sizes[i + 1],
                 weight_attr=paddle.ParamAttr(
                     initializer=paddle.nn.initializer.XavierUniform()))
-                    # initializer=paddle.nn.initializer.TruncatedNormal(
-                    #     mean=0.0,std=1.0 / math.sqrt(sizes[i]))))
+                   
             self._mlp_layers.append(linear)
             self.add_sublayer('linear_%d' % i, linear)
 
@@ -145,7 +142,7 @@ class DNNLayer(nn.Layer):
             self._mlp_layers.append(relu)
             self.add_sublayer('relu_%d' % i, relu)
 
-            norm = paddle.nn.BatchNorm(sizes[i+1])
+            norm = paddle.nn.BatchNorm1D(sizes[i+1])
             self._mlp_layers.append(norm)
             self.add_sublayer('norm_%d' % i, norm)
 
@@ -174,26 +171,13 @@ class FieldWiseBiInteraction(nn.Layer):
                 1
             ],
             dtype='float32',
-            default_initializer=paddle.nn.initializer.Constant(value=1.0)
-            # default_initializer=paddle.nn.initializer.Uniform()
+            # default_initializer=paddle.nn.initializer.Constant(value=1.0)
+            default_initializer=paddle.nn.initializer.XavierUniform()
             )
 
-        self.kernel_fm = paddle.create_parameter(
-            shape=[
-                self.num_fields,
-                1
-            ],
-            dtype='float32',
-            # default_initializer=paddle.nn.initializer.Constant(value=0.5))
-            default_initializer=paddle.nn.initializer.XavierUniform())
 
         if self.use_bias:
             self.bias_mf = paddle.create_parameter(
-                shape=[1, ],
-                dtype='float32',
-                default_initializer=paddle.nn.initializer.Constant(value=0.0))
-
-            self.bias_fm = paddle.create_parameter(
                 shape=[1, ],
                 dtype='float32',
                 default_initializer=paddle.nn.initializer.Constant(value=0.0))
@@ -228,27 +212,8 @@ class FieldWiseBiInteraction(nn.Layer):
         if self.use_bias:
             h_mf = h_mf + self.bias_mf
 
-        # FM module
-        square_of_sum_list = [
-            paddle.square(paddle.sum(field_i_vectors, axis=1, keepdim=True))
-            for field_i_vectors in fields_wise_embeds_list
-        ]
 
-        sum_of_square_list = [
-            paddle.sum(paddle.multiply(field_i_vectors, field_i_vectors),
-            axis=1,
-            keepdim=True)
-            for field_i_vectors in fields_wise_embeds_list
-        ]
-
-        field_fm = paddle.concat([square_of_sum - sum_of_square for square_of_sum, sum_of_square in
-                    zip(square_of_sum_list, sum_of_square_list)], 1)
-        h_fm = paddle.sum(paddle.multiply(field_fm, self.kernel_fm), axis=1)
-
-        if self.use_bias:
-            h_fm = h_fm + self.bias_fm
-
-        return h_mf #+ h_fm
+        return h_mf 
 
 
 

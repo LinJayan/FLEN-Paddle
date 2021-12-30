@@ -23,17 +23,18 @@ runner:
   print_interval: 500
   save_auc: 0.77
 
-  raw_file_dir: "./data/raw_data/PreRaw_data.txt" 
+  raw_file_dir: "../../../../data/data17073/train.csv"  # raw_data dir
+  raw_filled_file_dir: "./data/raw_data" # raw_data_filled dir
   rebuild_feature_map: True   # False use feature_map_cache
   min_threshold: 4
   feature_map_cache: '.feature_map'
 
   #model_init_path: "output_model/0" # init model
-  model_save_path: "output_model_flen_0"
+  model_save_path: "output_model_flen_1"
   test_data_dir:  "./data/big_data/test" #"../../../../data/test"
   infer_reader_path: "avazu_reader" # importlib format
   infer_batch_size: 512 #512
-  infer_load_path: "output_model_flen_0"
+  infer_load_path: "output_model_flen_1"
   infer_start_epoch: 0
   infer_end_epoch: 1
 
@@ -47,7 +48,7 @@ hyper_parameters:
     strategy: async
   # user-defined <key, value> pairs
   sparse_inputs_slots: 22
-  sparse_feature_number: 2544488 #50000000
+  sparse_feature_number: 2500000 #2500000 #2544488 #50000000
   sparse_num_field: 3
   sparse_feature_dim: 32
   layer_sizes_dnn: [64, 32]

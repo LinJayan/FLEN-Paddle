@@ -3,17 +3,23 @@
 以下是本例的简要目录结构及说明： 
 
 ```
-├── data # 样例数据
-    ├── sample_data # 样例数据
-        ├── train
-            ├── sample_train.txt # 训练数据样例
-├── __init__.py
+├── models
+    ├── rank
+        ├── flen
+           ├── logs # 训练、测试日志
+           ├── data # 样例数据
+                ├── sample_data # 样例数据
+                    ├── train
+                        ├── sample_train.txt # 训练数据样例
+           ├── __init__.py
+           ├── README.md # 文档
+           ├── config.yaml # sample数据配置
+           ├── config_bigdata.yaml # 全量数据配置
+           ├── net.py # 模型核心组网（动静统一）
+           ├── avazu_reader.py # 数据读取程序
+           ├── dygraph_model.py # 构建动态图
+├── tools # 
 ├── README.md # 文档
-├── config.yaml # sample数据配置
-├── config_bigdata.yaml # 全量数据配置
-├── net.py # 模型核心组网（动静统一）
-├── avazu_reader.py # 数据读取程序
-├── dygraph_model.py # 构建动态图
 ```
 
 注：在阅读该示例前，建议您先了解以下内容：
@@ -53,6 +59,17 @@
 ```
 其中```<label>```表示广告是否被点击，点击用1表示，未点击用0表示。```<categorical feature>```代表分类特征（离散特征），共有22个离散特征。相邻两个特征用```，```分隔，缺失特征用'-1'表示。测试集中```<label>```特征已被移除。  
 在模型目录的data目录下为您准备了快速运行的示例数据，若需要使用全量数据可以参考下方[效果复现](#效果复现)部分。
+
+**注**：
+
+**1.先下载原始数据，可从kaggle官方和AiStudio数据集获取数据**：[Click-Through Rate Prediction](https://www.kaggle.com/c/avazu-ctr-prediction)和[AiStudio数据集Avazu](https://aistudio.baidu.com/aistudio/datasetdetail/17073/0)
+
+**2.数据预处理，先在config_bigdata.yaml配置文件中配置好下载数据的路径，运行preprocess_data.py**
+```
+cd PaddleRec/models/rank/flen/
+# 处理数据、划分数据集大约耗时35分钟
+!python preprocess_data.py -m config_bigdata.yaml
+```
 
 ## 运行环境
 PaddlePaddle>=2.0
@@ -100,7 +117,7 @@ FieldWiseBiInteraction层主要包含两个部分，FM模块和MF模块。特征
 
 | 模型 | auc | logloss | batch_size | epoch_num| Time of each epoch |
 | :------| :------ | :------ | :------| :------ | :------ | 
-| FLEN | 0.7501 | 0.3950 |512 | 1 | 约 1 小时 |
+| FLEN | 0.7516 | 0.3963 |512 | 1 | 约 1 小时 |
 
 1. 确认您当前所在目录为 `PaddleRec/models/rank/flen`
 

@@ -54,11 +54,14 @@ class PreDataset(object):
         self.train_cnt = 0
         self.test_cnt = 0
         self.sample_cnt = 0
-        self.file_path = self.config.get("runner.raw_file_dir")
+        self.raw_file_dir = self.config.get("runner.raw_file_dir")
+        self.raw_filled_file_dir = self.config.get("runner.raw_filled_file_dir")
 
         self.rebuild_feature_map = self.config.get("runner.rebuild_feature_map")
         self.min_threshold = self.config.get("runner.min_threshold")
         self.feature_map_cache = self.config.get("runner.feature_map_cache")
+
+        self.filled_raw()
 
         self.init()
 
@@ -66,9 +69,46 @@ class PreDataset(object):
         self._get_field_name()
         self._get_feature_map()
         self._build_split()
+
+    def filled_raw(self):
+        "fill raw data with '-1' ,and spilt user, item, contex fields"
+        train_path = self.raw_file_dir
+        _mkdir_if_not_exist(self.raw_filled_file_dir)
+        self.file_object = self.raw_filled_file_dir+'/PreRaw_data.txt'
+
+        file_object_ = open(self.file_object, 'w')
+        with open(train_path, "r") as rf:
+            n = 0
+            m = -1
+            for l in tqdm(rf):
+                m += 1
+                out = []
+                values = l.rstrip('\n').split(',')
+                
+                fields_values = []
+                for i, v in enumerate(values):
+                    if v == "":
+                        values[i] = "-1"
+                
+                fields_values.append(values[0])
+                fields_values.append(values[3])
+                fields_values.extend(values[16:])
+                fields_values.extend(values[11:15])
+                fields_values.extend(values[8:11])
+                fields_values.extend(values[4:8])
+                fields_values.append(values[15])
+                fields_values.append(values[2])
+                fields_values.append(values[1])
+
+                if m == 0:
+                    print(fields_values)
+                file_object_.write(','.join(fields_values)+'\n')
+        file_object_.close()
+        logging.info('All Samples: %s ' % (m))  
+
     
     def _get_field_name(self):
-        with open(self.file_path) as csv_file:  # open the input file.
+        with open(self.file_object) as csv_file:  # open the input file.
             data_file = csv.reader(csv_file)
             header = next(data_file)  # get the header line.
             self.field_info = {k: v for v, k in enumerate(header)}
@@ -84,7 +124,7 @@ class PreDataset(object):
                 feature_mapper = pickle.load(f)
         else:
             feature_cnts = defaultdict(lambda: defaultdict(int))
-            with open(self.file_path) as f:
+            with open(self.file_object) as f:
                 f.readline()
                 pbar = tqdm(f, mininterval=1, smoothing=0.1)
                 pbar.set_description('Create avazu dataset: counting features')
@@ -122,7 +162,7 @@ class PreDataset(object):
 
         feature_mapper = self.feature_map
         sample_cnt = 0
-        for file in [self.file_path]:
+        for file in [self.file_object]:
             with open(file, "r") as rf:
                 train_cnt = 0
                 test_cnt = 0
@@ -160,10 +200,7 @@ class PreDataset(object):
                                 train_file.write(str(v)+'\n')
                             else:
                                 train_file.write(str(v)+',')
-
-                    
-                        
-                        
+          
             self.train_cnt = train_cnt
             self.test_cnt = test_cnt
             self.sample_cnt = sample_cnt
@@ -196,18 +233,6 @@ if __name__ == "__main__":
     
    
     args = parser.parse_args()
-
-    ##################################################
-    # 调试数据读取
-    # config = load_yaml(args.config_yaml)
-    # use_gpu = config.get("runner.use_gpu", True)
-    # place = paddle.set_device('gpu' if use_gpu else 'cpu')
-    # test_dataloader = create_data_loader(config=config, place=place, mode="test")
-    
-    # for batch_id, batch in enumerate(test_dataloader()):
-    #     print(batch)
-    
-    ##################################################
 
     main(args)
 

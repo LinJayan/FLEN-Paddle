@@ -1,11 +1,9 @@
-2021-12-22 20:57:53,624 - INFO - **************common.configs**********
-2021-12-22 20:57:53,624 - INFO - use_gpu: True, use_xpu: False, use_visual: False, infer_batch_size: 512, test_data_dir: ./data/big_data/test, start_epoch: 0, end_epoch: 1, print_interval: 500, model_load_path: output_model_flen_0
-2021-12-22 20:57:53,624 - INFO - **************common.configs**********
-W1222 20:57:53.625324 44529 device_context.cc:447] Please NOTE: device: 0, GPU Compute Capability: 7.0, Driver API Version: 10.1, Runtime API Version: 10.1
-W1222 20:57:53.629460 44529 device_context.cc:465] device: 0, cuDNN Version: 7.6.
-2021-12-22 20:57:59,822 - INFO - read data
-2021-12-22 20:57:59,822 - INFO - reader path:avazu_reader
-2021-12-22 20:57:59,823 - INFO - load model epoch 0
-2021-12-22 20:57:59,823 - INFO - start load model from output_model_flen_0/0
-2021-12-22 20:58:01,731 - INFO - epoch: 0, batch_id: 0, auc: 0.767299,logloss:0.44563365, avg_reader_cost: 0.00099 sec, avg_batch_cost: 0.00110 sec, avg_samples: 512.00000, ips: 134176.90 ins/s
-2021-12-22 20:58:07,746 - INFO - epoch: 0 done, auc: 0.750109,logloss:0.3950711, epoch time: 7.92 s
+2021-12-30 16:44:22,016 - INFO - **************common.configs**********
+W1230 16:44:22.017998 18281 device_context.cc:447] Please NOTE: device: 0, GPU Compute Capability: 7.0, Driver API Version: 10.1, Runtime API Version: 10.1
+W1230 16:44:22.022361 18281 device_context.cc:465] device: 0, cuDNN Version: 7.6.
+2021-12-30 16:44:26,490 - INFO - read data
+2021-12-30 16:44:26,490 - INFO - reader path:avazu_reader
+2021-12-30 16:44:26,491 - INFO - load model epoch 0
+2021-12-30 16:44:26,491 - INFO - start load model from output_model_flen/0
+2021-12-30 16:44:28,135 - INFO - epoch: 0, batch_id: 0, auc: 0.763744,logloss:0.43240726, avg_reader_cost: 0.00035 sec, avg_batch_cost: 0.00044 sec, avg_samples: 512.00000, ips: 155689.22 ins/s
+2021-12-30 16:44:33,250 - INFO - epoch: 0 done, auc: 0.751637,logloss:0.3963311, epoch time: 6.76 s
